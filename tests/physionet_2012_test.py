@@ -9,7 +9,7 @@ import os
 from tensorflow_datasets import testing
 from medical_ts_datasets.physionet_2012 import Physionet2012
 
-from .utils import FAKE_DATA_DIR
+from utils import FAKE_DATA_DIR
 
 
 class Physionet2012Test(testing.DatasetBuilderTestCase):

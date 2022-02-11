@@ -16,7 +16,7 @@ import tensorflow_datasets as tfds
 from util import MedicalTsDatasetBuilder, MedicalTsDatasetInfo
 
 RESOURCES = os.path.join(
-    os.path.dirname(__file__), 'resources', 'physionet2012')
+    os.path.dirname(__file__), 'resources', 'physionet2012subsampled')
 
 _CITATION = """
 @inproceedings{silva2012predicting,
@@ -36,7 +36,7 @@ The PhysioNet/Computing in Cardiology Challenge 2012.
 """
 
 
-class Physionet2012DataReader(Sequence):
+class Physionet2012SubsampledDataReader(Sequence):
     """Reader class for physionet 2012 dataset."""
 
     static_features = [
@@ -191,7 +191,7 @@ class Physionet2012DataReader(Sequence):
         return len(self.endpoint_data)
 
 
-class Physionet2012(MedicalTsDatasetBuilder):
+class Physionet2012Subsampled(MedicalTsDatasetBuilder):
     """Dataset of the PhysioNet/Computing in Cardiology Challenge 2012."""
 
     VERSION = tfds.core.Version('1.0.10')
@@ -219,8 +219,8 @@ class Physionet2012(MedicalTsDatasetBuilder):
             default_target='In-hospital_death',
             # TODO: Currently we treat all measurements as vitals. Should split
             # this.
-            demographics_names=Physionet2012DataReader.expanded_static_features,
-            vitals_names=Physionet2012DataReader.ts_features,
+            demographics_names=Physionet2012SubsampledDataReader.expanded_static_features,
+            vitals_names=Physionet2012SubsampledDataReader.ts_features,
             description=_DESCRIPTION,
             homepage='https://physionet.org/content/challenge-2012/1.0.0/',
             citation=_CITATION
@@ -236,9 +236,6 @@ class Physionet2012(MedicalTsDatasetBuilder):
             'set-c': 'http://physionet.org/files/challenge-2012/1.0.0/set-c.tar.gz',  # noqa: E501
             # 'test-outcome': 'http://physionet.org/files/challenge-2012/1.0.0/Outcomes-c.txt?download',  # noqa: E501
         })
-        print("################")
-        print(paths)
-        print("################")
         a_path = os.path.join(paths['set-a'], 'set-a')
         b_path = os.path.join(paths['set-b'], 'set-b')
         c_path = os.path.join(paths['set-c'], 'set-c')
@@ -269,6 +266,6 @@ class Physionet2012(MedicalTsDatasetBuilder):
 
     def _generate_examples(self, data_dirs, outcome_file):
         """Yield examples."""
-        reader = Physionet2012DataReader(data_dirs, outcome_file)
+        reader = Physionet2012SubsampledDataReader(data_dirs, outcome_file)
         for instance in reader:
             yield instance

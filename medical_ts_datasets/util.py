@@ -106,6 +106,21 @@ class MedicalTsDatasetBuilder(tfds.core.GeneratorBasedBuilder):
         self.output_raw = output_raw
         self.add_measurements_and_lengths = add_measurements_and_lengths
         super().__init__(**kwargs)
+    
+    def _positive_instances(self, *args):
+        if len(args) == 2:
+            data, label = args
+        if len(args) == 3:
+            data, label, sample_weights = args
+
+        return tf.math.equal(tf.reduce_max(input_tensor=label), 1)
+
+    def _negative_instances(self, *args):
+        if len(args) == 2:
+            data, label = args
+        if len(args) == 3:
+            data, label, sample_weights = args
+        return tf.math.equal(tf.reduce_max(input_tensor=label), 0)
 
     def _as_dataset(self, **kwargs):
         """Evtl. transform categorical covariates into one-hot encoding."""
@@ -134,7 +149,7 @@ class MedicalTsDatasetBuilder(tfds.core.GeneratorBasedBuilder):
 
             if self.add_measurements_and_lengths:
                 measurements = tf.math.is_finite(time_series)
-                length = tf.shape(time)[0]
+                length = tf.shape(input=time)[0]
                 return {
                     'combined': (
                         demographics,
@@ -150,8 +165,12 @@ class MedicalTsDatasetBuilder(tfds.core.GeneratorBasedBuilder):
                     'combined': (demographics, time, time_series),
                     'target': instance['targets'][self.default_target]
                 }
-
-        return dataset.map(
+        
+        ds = dataset.map(
             preprocess_output,
             num_parallel_calls=tf.data.experimental.AUTOTUNE
         )
+        
+        #pos_data = dataset.filter(self._positive_instances) 
+        #neg_data = dataset.filter(self._negative_instances)
+        return ds
